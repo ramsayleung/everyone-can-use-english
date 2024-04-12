@@ -13,7 +13,7 @@ import {
 import { ConversationForm } from "@renderer/components";
 import { useState, useEffect, useContext, useReducer } from "react";
 import { ChevronLeftIcon, MessageCircleIcon, SpeechIcon } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   DbProviderContext,
   AppSettingsProviderContext,
@@ -24,10 +24,11 @@ import dayjs from "dayjs";
 import { CONVERSATION_PRESETS } from "@/constants";
 
 export default () => {
+  const [searchParams] = useSearchParams();
   const [creating, setCreating] = useState<boolean>(false);
   const [preset, setPreset] = useState<any>({});
   const { addDblistener, removeDbListener } = useContext(DbProviderContext);
-  const { EnjoyApp } = useContext(AppSettingsProviderContext);
+  const { EnjoyApp, webApi } = useContext(AppSettingsProviderContext);
   const { currentEngine } = useContext(AISettingsProviderContext);
   const [conversations, dispatchConversations] = useReducer(
     conversationsReducer,
@@ -43,6 +44,21 @@ export default () => {
       removeDbListener(onConversationsUpdate);
     };
   }, []);
+
+  useEffect(() => {
+    const postId = searchParams.get('postId');
+    if (!postId) return;
+
+    webApi.post(postId).then((post) => {
+      const preset: any = post.metadata.content;
+      if (!preset?.configuration?.roleDefinition) {
+        return;
+      }
+
+      setPreset(preset);
+      setCreating(true);
+    })
+  }, [searchParams.get('postId')])
 
   const fetchConversations = async () => {
     const _conversations = await EnjoyApp.conversations.findAll({});
@@ -81,7 +97,7 @@ export default () => {
     engine: currentEngine?.name,
     configuration: {
       type: "gpt",
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4-turbo",
       baseUrl: "",
       roleDefinition: "",
       temperature: 0.2,
@@ -115,7 +131,7 @@ export default () => {
   };
 
   return (
-    <div className="h-full px-4 py-6 lg:px-8 bg-muted flex flex-col">
+    <div className="h-full px-4 py-6 lg:px-8 flex flex-col">
       <div className="w-full max-w-screen-md mx-auto flex-1">
         <div className="flex space-x-1 items-center mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -169,7 +185,7 @@ export default () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <DialogTrigger>
+                <DialogTrigger asChild>
                   <Button
                     data-testid={`conversation-preset-${customPreset.key}`}
                     onClick={() => {
@@ -182,7 +198,7 @@ export default () => {
                     {t("custom")} GPT
                   </Button>
                 </DialogTrigger>
-                <DialogTrigger>
+                <DialogTrigger asChild>
                   <Button
                     data-testid={`conversation-preset-${ttsPreset.key}`}
                     onClick={() => {
@@ -214,7 +230,7 @@ export default () => {
         {conversations.map((conversation) => (
           <Link key={conversation.id} to={`/conversations/${conversation.id}`}>
             <div
-              className="bg-background text-muted-foreground rounded-full w-full mb-2 p-4 hover:bg-primary hover:text-muted cursor-pointer flex items-center"
+              className="bg-muted text-muted-foreground rounded-full w-full mb-2 p-4 hover:bg-primary hover:text-muted cursor-pointer flex items-center"
               style={{
                 borderLeftColor: `#${conversation.id
                   .replaceAll("-", "")

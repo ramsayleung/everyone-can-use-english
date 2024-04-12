@@ -1,20 +1,36 @@
 import { t } from "i18next";
-import { Separator } from "@renderer/components/ui";
+import {
+  Separator,
+} from "@renderer/components/ui";
+import { HotKeysSettingsProviderContext, Hotkey } from "@renderer/context";
+import { HotkeysSettings } from "@renderer/components";
+import { useContext, useState } from "react";
 
 export const Hotkeys = () => {
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{
+    name: string;
+    keyName: string;
+  } | null>(null);
+  const { currentHotkeys } = useContext(HotKeysSettingsProviderContext);
+
   const commandOrCtrl = navigator.platform.includes("Mac") ? "Cmd" : "Ctrl";
+
+  const handleItemSelected = (item: { name: string; keyName: Hotkey }) => {
+    setOpen(true);
+    setSelectedItem(item);
+  };
 
   return (
     <>
       <div className="font-semibold mb-4 capitilized">{t("hotkeys")}</div>
-
       <div className="mb-6">
         <div className="text-sm text-muted-foreground">{t("system")}</div>
 
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-2">{t("quitApp")}</div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            {commandOrCtrl} + Q
+          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-not-allowed capitalize">
+            {commandOrCtrl}+Q
           </kbd>
         </div>
 
@@ -24,8 +40,16 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2">
             {t("openPreferences")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            {commandOrCtrl} + ,
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("openPreferences"),
+                keyName: "OpenPreferences",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.OpenPreferences}
           </kbd>
         </div>
         <Separator />
@@ -36,8 +60,16 @@ export const Hotkeys = () => {
 
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-2">{t("playOrPause")}</div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            Space
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("playOrPause"),
+                keyName: "PlayOrPause",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.PlayOrPause}
           </kbd>
         </div>
 
@@ -47,8 +79,16 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2 capitalize">
             {t("startOrStopRecording")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            r
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("startOrStopRecording"),
+                keyName: "StartOrStopRecording",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.StartOrStopRecording}
           </kbd>
         </div>
 
@@ -58,8 +98,16 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2">
             {t("playOrPauseRecording")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            {commandOrCtrl} + r
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("playOrPauseRecording"),
+                keyName: "PlayOrPauseRecording",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.PlayOrPauseRecording}
           </kbd>
         </div>
 
@@ -69,8 +117,16 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2 capitalize">
             {t("playPreviousSegment")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            p
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("playPreviousSegment"),
+                keyName: "PlayPreviousSegment",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer"
+          >
+            {currentHotkeys.PlayPreviousSegment}
           </kbd>
         </div>
 
@@ -80,8 +136,16 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2 capitalize">
             {t("playNextSegment")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            n
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("playNextSegment"),
+                keyName: "PlayNextSegment",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.PlayNextSegment}
           </kbd>
         </div>
 
@@ -91,14 +155,28 @@ export const Hotkeys = () => {
           <div className="flex items-center space-x-2 capitalize">
             {t("compare")}
           </div>
-          <kbd className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground">
-            c
+          <kbd
+            onClick={() =>
+              handleItemSelected({
+                name: t("compare"),
+                keyName: "Compare",
+              })
+            }
+            className="bg-muted px-2 py-1 rounded-md text-sm text-muted-foreground cursor-pointer capitalize"
+          >
+            {currentHotkeys.Compare}
           </kbd>
         </div>
 
         <Separator />
-
       </div>
+
+      <HotkeysSettings
+        open={open}
+        keyName={selectedItem?.keyName}
+        name={selectedItem?.name}
+        onOpenChange={setOpen}
+      />
     </>
   );
 };

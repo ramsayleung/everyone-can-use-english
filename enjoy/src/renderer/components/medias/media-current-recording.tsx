@@ -1,6 +1,7 @@
 import { useEffect, useContext, useRef, useState } from "react";
 import {
   AppSettingsProviderContext,
+  HotKeysSettingsProviderContext,
   MediaPlayerProviderContext,
 } from "@renderer/context";
 import { MediaRecorder, RecordingDetail } from "@renderer/components";
@@ -27,6 +28,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetClose,
+  ScrollArea,
 } from "@renderer/components/ui";
 import {
   GitCompareIcon,
@@ -60,6 +62,9 @@ export const MediaCurrentRecording = () => {
     currentTime: mediaCurrentTime,
   } = useContext(MediaPlayerProviderContext);
   const { webApi, EnjoyApp } = useContext(AppSettingsProviderContext);
+  const { enabled, currentHotkeys } = useContext(
+    HotKeysSettingsProviderContext
+  );
   const [player, setPlayer] = useState(null);
   const [regions, setRegions] = useState<Regions | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -174,6 +179,14 @@ export const MediaCurrentRecording = () => {
   const handleShare = async () => {
     if (!currentRecording) return;
 
+    if (!currentRecording.isSynced) {
+      try {
+        await EnjoyApp.recordings.sync(currentRecording.id);
+      } catch (error) {
+        toast.error(t("shareFailed"), { description: error.message });
+        return;
+      }
+    }
     if (!currentRecording.uploadedAt) {
       try {
         await EnjoyApp.recordings.upload(currentRecording.id);
@@ -391,7 +404,7 @@ export const MediaCurrentRecording = () => {
   }, [currentRecording, isRecording, layout?.width]);
 
   useHotkeys(
-    ["Ctrl+R", "Meta+R"],
+    currentHotkeys.PlayOrPauseRecording,
     (keyboardEvent, hotkeyEvent) => {
       if (!player) return;
       keyboardEvent.preventDefault();
@@ -403,6 +416,7 @@ export const MediaCurrentRecording = () => {
         document.getElementById("recording-play-or-pause-button").click();
       }
     },
+    { enabled },
     [player]
   );
 
@@ -414,7 +428,9 @@ export const MediaCurrentRecording = () => {
           <div
             className="m-auto"
             dangerouslySetInnerHTML={{
-              __html: t("noRecordingForThisSegmentYet"),
+              __html: t("noRecordingForThisSegmentYet", {
+                key: currentHotkeys.StartOrStopRecording?.toUpperCase(),
+              }),
             }}
           ></div>
         </div>
@@ -598,16 +614,16 @@ export const MediaCurrentRecording = () => {
       <Sheet open={detailIsOpen} onOpenChange={(open) => setDetailIsOpen(open)}>
         <SheetContent
           side="bottom"
-          className="rounded-t-2xl shadow-lg"
+          className="rounded-t-2xl shadow-lg max-h-screen overflow-y-scroll"
           displayClose={false}
         >
-          <SheetHeader className="flex items-center justify-center -mt-4 mb-2">
-            <SheetClose>
-              <ChevronDownIcon />
-            </SheetClose>
-          </SheetHeader>
+            <SheetHeader className="flex items-center justify-center -mt-4 mb-2">
+              <SheetClose>
+                <ChevronDownIcon />
+              </SheetClose>
+            </SheetHeader>
 
-          <RecordingDetail recording={currentRecording} />
+            <RecordingDetail recording={currentRecording} />
         </SheetContent>
       </Sheet>
     </div>

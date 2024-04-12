@@ -70,9 +70,10 @@ export class Client {
   }
 
   auth(params: {
-    provider: "mixin" | "github" | "bandu";
+    provider: "mixin" | "github" | "bandu" | "email";
     code: string;
     phoneNumber?: string;
+    email?: string;
   }): Promise<UserType> {
     return this.api.post("/api/sessions", decamelizeKeys(params));
   }
@@ -81,7 +82,18 @@ export class Client {
     return this.api.get("/api/me");
   }
 
-  loginCode(params: { phoneNumber: string }): Promise<void> {
+  updateProfile(
+    id: string,
+    params: {
+      name?: string;
+      email?: string;
+      code?: string;
+    }
+  ): Promise<UserType> {
+    return this.api.put(`/api/users/${id}`, decamelizeKeys(params));
+  }
+
+  loginCode(params: { phoneNumber?: string; email?: string }): Promise<void> {
     return this.api.post("/api/sessions/login_code", decamelizeKeys(params));
   }
 

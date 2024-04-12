@@ -2,11 +2,11 @@ import { t } from "i18next";
 import { Button, ScrollArea, Separator } from "@renderer/components/ui";
 import {
   About,
+  Appearance,
   DefaultEngineSettings,
   Hotkeys,
   UserSettings,
   BalanceSettings,
-  LanguageSettings,
   LibrarySettings,
   WhisperSettings,
   OpenaiSettings,
@@ -17,6 +17,7 @@ import {
 } from "@renderer/components";
 import { useState } from "react";
 import { Tooltip } from "react-tooltip";
+import { EmailSettings } from "./email-settings";
 
 export const Preferences = () => {
   const TABS = [
@@ -68,9 +69,9 @@ export const Preferences = () => {
           </div>
           <UserSettings />
           <Separator />
-          <BalanceSettings />
+          <EmailSettings />
           <Separator />
-          <LanguageSettings />
+          <BalanceSettings />
           <Separator />
         </div>
       ),
@@ -79,6 +80,11 @@ export const Preferences = () => {
       value: "hotkeys",
       label: t("hotkeys"),
       component: () => <Hotkeys />,
+    },
+    {
+      value: "appearance",
+      label: t("appearance"),
+      component: () => <Appearance />,
     },
     {
       value: "about",
@@ -102,9 +108,8 @@ export const Preferences = () => {
               key={tab.value}
               variant={activeTab === tab.value ? "default" : "ghost"}
               size="sm"
-              className={`capitilized w-full justify-start mb-2 ${
-                activeTab === tab.value ? "" : "hover:bg-muted"
-              }`}
+              className={`capitilized w-full justify-start mb-2 ${activeTab === tab.value ? "" : "hover:bg-muted"
+                }`}
               onClick={() => setActiveTab(tab.value)}
             >
               <span className="text-sm">{tab.label}</span>
